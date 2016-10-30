@@ -7,6 +7,7 @@ import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.*;
+import com.vaadin.ui.Calendar;
 import com.vaadin.ui.components.calendar.CalendarComponentEvents;
 import com.vaadin.ui.components.calendar.event.BasicEvent;
 import com.vaadin.ui.components.calendar.event.CalendarEvent;
@@ -14,9 +15,7 @@ import com.vaadin.ui.components.calendar.event.CalendarEventProvider;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * This UI is the application entry point. A UI may either represent a browser window 
@@ -27,6 +26,8 @@ import java.util.List;
  */
 @Theme("mytheme")
 public class MyUI extends UI {
+    private static final int TWO_WEEKS = 14;
+    private static final int MINUS_TWO_WEEKS = -14;
     SimpleDateFormat parseFormatter = new SimpleDateFormat("dd-MM-yyyy-HH:mm");
     SimpleDateFormat outputFormatter = new SimpleDateFormat("HH:mm");
 
@@ -45,14 +46,46 @@ public class MyUI extends UI {
 
         TextArea textArea = setupEventList(events);
 
+        Button previousMonth = getChangeMonthButton("Previous", MINUS_TWO_WEEKS, calendar);
+        Button nextMonth = getChangeMonthButton("Next", TWO_WEEKS, calendar);
+
         horizontalLayout.addComponent(calendar);
         horizontalLayout.addComponent(textArea);
 
       //  horizontalLayout.setWidth("100%");
+        final HorizontalLayout horizontalLayout2 = new HorizontalLayout();
+        layout.addComponent(horizontalLayout2);
+        horizontalLayout2.setSpacing(true);
+
+        layout.addComponent(horizontalLayout2);
+
+        horizontalLayout2.addComponent(previousMonth);
+        horizontalLayout2.addComponent(nextMonth);
 
         layout.setMargin(true);
         layout.setSpacing(true);
 
+    }
+
+    private Button getChangeMonthButton(String label, int days, Calendar calendar) {
+        Button button = new Button(label);
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        button.addClickListener(e -> {
+            Date startDate, endDate;
+
+            startDate = calendar.getStartDate();
+            endDate = calendar.getEndDate();
+
+            cal.setTime(startDate);
+            cal.add(java.util.Calendar.DAY_OF_MONTH, days);
+            calendar.setStartDate(cal.getTime());
+
+            cal.setTime(endDate);
+            cal.add(java.util.Calendar.DAY_OF_MONTH, days);
+            calendar.setEndDate(cal.getTime());
+        });
+
+        return button;
     }
 
     private TextArea setupEventList(List<CalendarEvent> events) {
